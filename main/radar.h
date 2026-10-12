@@ -1,4 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
+
 void radar_setup();
-void radar_present();
+bool radar_presence();

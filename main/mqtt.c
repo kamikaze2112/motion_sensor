@@ -118,6 +118,7 @@ static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t e
             ESP_LOGI(TAG, "MQTT Connected");
             mqtt_publish(status_topic, "online", 1, 1);
             mqtt_discovery();
+            
 
         }
         break;

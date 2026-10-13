@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "esp_ota_ops.h"    // esp_ota_get_running_partition(), esp_partition_t
+#include "ota.h"
 
 #define HA_STATUS_TOPIC "homeassistant/status"
 
@@ -109,6 +110,28 @@ static void mqtt_discovery() {
 
 }
 
+static void mqtt_data(int topic_len, const char *topic, int data_len, const char *data) {
+
+    char d[10];
+    snprintf(d, sizeof(d), "%.*s", data_len, data);
+    int dnum = atoi(d);
+
+    if (dnum < 0) dnum = 0;
+    
+    if (topic_len == strlen(ota_set) && strncmp(topic, ota_set, topic_len) == 0) {
+        ota_start();
+    }
+
+    if (topic_len == strlen(HA_STATUS_TOPIC) && strncmp(topic, HA_STATUS_TOPIC, topic_len) == 0 && data_len == 6 && strncmp(data, "online", 6) == 0) {
+
+        mqtt_publish(status_topic, "online", 1, 1);
+        mqtt_discovery();
+    }
+    
+
+    //mqtt_state();
+}
+
 static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
 
     switch (event_id)
@@ -124,7 +147,8 @@ static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t e
         break;
     
     case MQTT_EVENT_DISCONNECTED:
-        /* code */
+        
+        ESP_LOGI(TAG, "MQTT Disconnected");
         break;
 
     case MQTT_EVENT_DATA:
@@ -133,6 +157,23 @@ static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t e
 
     default:
         break;
+    }
+}
+
+static void ip_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
+
+    if (client_started){
+        return;
+    } else {
+
+        esp_err_t err = esp_mqtt_client_start(mqtt_handle);
+
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "MQTT Client failed with error: %s", esp_err_to_name(err));
+        } else {
+            ESP_LOGI(TAG, "MQTT Client started.");
+            client_started = true;
+        }
     }
 }
 
@@ -185,4 +226,8 @@ void mqtt_setup() {
         ESP_LOGE(TAG, "MQTT Handle returned NULL");
         return;
      }
+
+    ESP_ERROR_CHECK(esp_mqtt_client_register_event(mqtt_handle, MQTT_EVENT_ANY, mqtt_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event_handler, NULL, NULL));
+
 }

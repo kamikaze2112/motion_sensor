@@ -57,9 +57,6 @@ void radar_setup() {
     gpio_install_isr_service(0);
     gpio_isr_handler_add(RADAR_GPIO, radar_isr_handler, NULL);
 
-    if (radar_presence()) {
-        mqtt_state(radar_presence());
-    }
 
     ESP_LOGI(TAG, "Radar setup complete.");
 

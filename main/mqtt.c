@@ -127,14 +127,10 @@ static void mqtt_data(int topic_len, const char *topic, int data_len, const char
 
         mqtt_publish(status_topic, "online", 1, 1);
         esp_ota_mark_app_valid_cancel_rollback();
-        mqtt_subscribe(ota_set);
-        mqtt_subscribe(HA_STATUS_TOPIC);
         mqtt_discovery();
 
      }
     
-
-    //mqtt_state();
 }
 
 static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
@@ -146,8 +142,9 @@ static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t e
             ESP_LOGI(TAG, "MQTT Connected");
             mqtt_publish(status_topic, "online", 1, 1);
             mqtt_discovery();
-            
-
+            mqtt_subscribe(ota_set);
+            mqtt_subscribe(HA_STATUS_TOPIC);
+            mqtt_state(radar_presence());
         }
         break;
     

@@ -19,7 +19,7 @@ static const char *TAG = "motion/ota";
 
 static httpd_handle_t httpd_handle;
 
-bool ota_running = false;
+static bool ota_running = false;
 
 static const httpd_uri_t ota_page_rule = {
     .uri = "/",
@@ -82,7 +82,7 @@ static esp_err_t ota_upload(httpd_req_t *req) {
         return ESP_FAIL;
     }
 
-    esp_timer_restart(ota_timer, OTA_TIMEOUT_MS);
+    esp_timer_restart(ota_timer, OTA_TIMEOUT_MS * 1000ULL);
 
     char chunk[1024];
     int left = req->content_len;
@@ -139,6 +139,7 @@ static esp_err_t ota_upload(httpd_req_t *req) {
 static void ota_timeout(void *arg) {
     ESP_LOGW(TAG, "OTA TIMEOUT");
     httpd_stop(httpd_handle);
+    ota_running = false;
 }
 
 void ota_start() {
@@ -154,6 +155,7 @@ void ota_start() {
     esp_err_t err = httpd_start(&httpd_handle, &httpd_config);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTPD failed to start with error: %d", err);
+        ota_running = false;
         return;
     }
 

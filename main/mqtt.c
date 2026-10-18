@@ -126,7 +126,6 @@ static void mqtt_data(int topic_len, const char *topic, int data_len, const char
     if (topic_len == strlen(HA_STATUS_TOPIC) && strncmp(topic, HA_STATUS_TOPIC, topic_len) == 0 && data_len == 6 && strncmp(data, "online", 6) == 0) {
 
         mqtt_publish(status_topic, "online", 1, 1);
-        esp_ota_mark_app_valid_cancel_rollback();
         mqtt_discovery();
 
      }
@@ -141,6 +140,7 @@ static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t e
         {
             ESP_LOGI(TAG, "MQTT Connected");
             mqtt_publish(status_topic, "online", 1, 1);
+            esp_ota_mark_app_valid_cancel_rollback();
             mqtt_discovery();
             mqtt_subscribe(ota_set);
             mqtt_subscribe(HA_STATUS_TOPIC);

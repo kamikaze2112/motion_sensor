@@ -152,7 +152,14 @@ static void mqtt_event_handler(void *arg, esp_event_base_t event_base, int32_t e
         break;
 
     case MQTT_EVENT_DATA:
-    /* code */
+    
+        {
+            esp_mqtt_event_handle_t event = event_data;
+            ESP_LOGI(TAG, "got %.*s = %.*s", event->topic_len, event->topic, event->data_len, event->data);
+            mqtt_data(event->topic_len, event->topic, event->data_len, event->data);
+
+        }
+        
         break;
 
     default:

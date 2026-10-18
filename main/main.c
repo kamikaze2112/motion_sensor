@@ -7,6 +7,8 @@
 #include "esp_event.h"   // esp_event_loop_create_default()
 #include "nvs_flash.h"   // nvs_flash_init(), nvs_flash_erase()
 #include "wifi.h"        // wifi_setup()
+#include "radar.h"
+#include "mqtt.h"
 
 void app_main(void) {
 
@@ -19,6 +21,8 @@ ESP_ERROR_CHECK(ret);
 
 ESP_ERROR_CHECK(esp_event_loop_create_default());
 
+radar_setup();
+mqtt_setup();
 wifi_setup();
 
 }

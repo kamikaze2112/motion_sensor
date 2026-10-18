@@ -6,6 +6,7 @@
 #include "esp_timer.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <stdbool.h>
 
 #define OTA_TIMEOUT_MS (3 * 60 * 1000)
 
@@ -17,6 +18,8 @@ static esp_timer_handle_t ota_timer;
 static const char *TAG = "motion/ota";
 
 static httpd_handle_t httpd_handle;
+
+bool ota_running = false;
 
 static const httpd_uri_t ota_page_rule = {
     .uri = "/",
@@ -79,6 +82,8 @@ static esp_err_t ota_upload(httpd_req_t *req) {
         return ESP_FAIL;
     }
 
+    esp_timer_restart(ota_timer, OTA_TIMEOUT_MS);
+
     char chunk[1024];
     int left = req->content_len;
     int total = 0;
@@ -137,6 +142,12 @@ static void ota_timeout(void *arg) {
 }
 
 void ota_start() {
+
+    if (ota_running) {
+        return;
+    } else {
+        ota_running = true;
+    }
 
     httpd_config_t httpd_config = HTTPD_DEFAULT_CONFIG();
 

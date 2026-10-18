@@ -21,8 +21,9 @@ ESP_ERROR_CHECK(ret);
 
 ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-radar_setup();
+
 mqtt_setup();
 wifi_setup();
+radar_setup();
 
 }
